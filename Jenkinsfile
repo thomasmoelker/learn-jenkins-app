@@ -23,14 +23,14 @@ pipeline {
         stage('Run Tests'){
 			parallel {
 				stage('Unit test') {
-						agent {
-							docker {
-								image 'node:18-alpine'
+					agent {
+						docker {
+							image 'node:18-alpine'
 						reuseNode true
 					}
 					}
 					steps {
-								sh '''
+						sh '''
 						test -f build/index.html
 						npm test
 						'''
@@ -42,14 +42,14 @@ pipeline {
 					}
 				}
 				stage('E2E') {
-							agent {
-								docker {
-									image 'mcr.microsoft.com/playwright:v1.54.0-noble'
+					agent {
+						docker {
+							image 'mcr.microsoft.com/playwright:v1.54.0-noble'
 							reuseNode true
 						}
 					}
 					steps {
-								sh '''
+						sh '''
 							npm install serve
 							node_modules/.bin/serve -s build &
 							sleep 10
@@ -62,6 +62,20 @@ pipeline {
 				}
 			}
 		}
+		stage('Deploy') {
+			agent {
+				docker {
+					image 'node:18-alpine'
+					reuseNode true
+				}
+			}
+			steps {
+				sh '''
+					npm install -g netlify-cli
+					netlify --version
+				'''
+            }
+        }
 	}
 }
 
