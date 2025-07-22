@@ -10,6 +10,7 @@ pipeline {
 				}
 			}
 			steps {
+				clearRm()
 				sh '''
 					ls -la
 					node --version
