@@ -85,16 +85,35 @@ pipeline {
 					echo "Deploying to staging. Site ID: $NETLIFY_SITE_ID"
 					node_modules/.bin/netlify status
 					node_modules/.bin/netlify deploy --dir=build --no-build --json > deploy-output.json
-					node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
+
 				'''
             }
-        }
-        stage('Approval') {
-			steps {
-				timeout(time: 1, unit: 'HOURS') {
-					input cancel: 'Abort!', message: 'Ready to deploy?', ok: 'I\'m sure!'
-				}
+            script {
+				env.STAGING_URL = sh(script:'node_modules/.bin/node-jq -r ".deploy_url" deploy-output.json', returnStdout: true)
 			}
+        }
+
+		stage('Staging E2E') {
+			agent {
+				docker {
+					image 'mcr.microsoft.com/playwright:v1.54.0-noble'
+						reuseNode true
+					}
+			}
+			environment {
+				CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
+				}
+			steps {
+				sh '''
+						npx playwright test --reporter=html
+					'''
+				}
+			post{
+				always {
+					publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report Staging', reportTitles: '', useWrapperFileDirectly: true])
+					}
+				}
+
 		}
 		stage('Deploy Production') {
 			agent {
@@ -115,7 +134,7 @@ pipeline {
         }
         stage('Prod E2E') {
 			environment {
-				CI_ENVIRONMENT_URL='https://gleaming-douhua-144faa.netlify.app'
+				CI_ENVIRONMENT_URL = 'https://gleaming-douhua-144faa.netlify.app'
 			}
 			agent {
 				docker {
