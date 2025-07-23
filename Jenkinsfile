@@ -99,7 +99,7 @@ pipeline {
 				}
 				steps {
 				sh '''
-						npx playwright test --reporter=html --CI_ENVIRONMENT_URL=
+						npx playwright test --reporter=html
 					'''
 				}
 				post{
