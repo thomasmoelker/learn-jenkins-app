@@ -87,6 +87,13 @@ pipeline {
 				'''
             }
         }
+        stage('Approval') {
+			steps {
+				timeout(time: 1, unit: 'HOURS') {
+					input cancel: 'Abort!', message: 'Ready to deploy?', ok: 'I\'m sure!', parameters: [string(defaultValue: 'Deploy to production', description: 'When you\'re ready to deploy. Write the given message', name: 'Type: "Deploy to production"')]
+				}
+			}
+		}
 		stage('Deploy Production') {
 			agent {
 				docker {
