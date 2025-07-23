@@ -16,6 +16,7 @@ pipeline {
 			}
 			steps {
 				sh '''
+					echo "Test for autamatic deployment"
 					ls -la
 					node --version
 					npm --version
