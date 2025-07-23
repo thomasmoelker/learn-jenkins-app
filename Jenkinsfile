@@ -83,14 +83,14 @@ pipeline {
 					node_modules/.bin/netlify --version
 					echo "Deploying to staging. Site ID: $NETLIFY_SITE_ID"
 					node_modules/.bin/netlify status
-					node_modules/.bin/netlify deploy --dir=build --no-build
+					node_modules/.bin/netlify deploy --dir=build --no-build --json > deploy-output.json
 				'''
             }
         }
         stage('Approval') {
 			steps {
 				timeout(time: 1, unit: 'HOURS') {
-					input cancel: 'Abort!', message: 'Ready to deploy?', ok: 'I\'m sure!', parameters: [string(defaultValue: 'Deploy to production', description: 'When you\'re ready to deploy. Write the given message', name: 'Type: "Deploy to production"')]
+					input cancel: 'Abort!', message: 'Ready to deploy?', ok: 'I\'m sure!'
 				}
 			}
 		}
